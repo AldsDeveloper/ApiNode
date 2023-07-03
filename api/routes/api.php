@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\AccessTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +26,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // For Personal access token
 Route::post('/generate/token', [ App\Http\Controllers\AccessTokenController::class , 'generate']);
 Route::post('/access/token', [ App\Http\Controllers\AccessTokenController::class , 'accessToken']);
-
 
 
 // For Company
