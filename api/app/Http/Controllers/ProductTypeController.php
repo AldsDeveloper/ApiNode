@@ -14,9 +14,9 @@ class ProductTypeController extends Controller
      */
     public function fetch()
     {
-        $shops = ProductType::all();
+        $types = ProductType::all();
 
-        return response()->json(["success" => true, $shops]);
+        return response()->json(["success" => true, $types]);
     }
 
     /**
@@ -41,22 +41,22 @@ class ProductTypeController extends Controller
      */
     public function update(Request $request)
     {
-        $shopId = $request->input('id');
+        $typeId = $request->input('id');
 
-        $shop = ProductType::find($shopId);
+        $type = ProductType::find($typeId);
 
-        if (!$shop) {
-            return response()->json(['success' => false, 'message' => 'Shop not found'], 404);
+        if (!$type) {
+            return response()->json(['success' => false, 'message' => 'Product type not found'], 404);
         }
-        $shop->name = $request->input('name');
-        $shop->company_id = $request->input('company_id');
+        
+        $type->name = $request->input('name');
 
-        $shop->save();
+        $type->save();
 
-        if ($shop->save()) {
-            return response()->json(['success' => true, 'message' => 'Shop updated successfully']);
+        if ($type->save()) {
+            return response()->json(['success' => true, 'message' => 'Product type updated successfully']);
         } else {
-            return response()->json(['success' => false, 'message' => 'Failed to update shop']);
+            return response()->json(['success' => false, 'message' => 'Failed to update product type']);
         }
     }
 
