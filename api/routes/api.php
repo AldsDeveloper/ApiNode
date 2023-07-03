@@ -23,3 +23,18 @@ Route::post('/generate/token', [ App\Http\Controllers\AccessTokenController::cla
 Route::post('/access/token', [ App\Http\Controllers\AccessTokenController::class , 'accessToken']);
 
 
+
+// For Company
+Route::post('fetch/company', [ App\Http\Controllers\CompanyController::class , 'fetch']);
+Route::post('create/company', [ App\Http\Controllers\CompanyController::class , 'create']);
+Route::post('update/company', [ App\Http\Controllers\CompanyController::class , 'update']);
+Route::post('destroy/company', [ App\Http\Controllers\CompanyController::class , 'destroy']);
+
+
+// For Shop
+Route::post('fetch/shop', [ App\Http\Controllers\ShopController::class , 'fetch']);
+Route::post('create/shop', [ App\Http\Controllers\ShopController::class , 'create']);
+Route::post('update/shop', [ App\Http\Controllers\ShopController::class , 'update']);
+Route::post('destroy/shop', [ App\Http\Controllers\ShopController::class , 'destroy']);
+
+
