@@ -8,9 +8,55 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Coupons;
+use App\Models\Shop;
 
 class ProductController extends Controller
 {
+
+    function productPerShop(Request $request)
+    {
+
+        $status = $request->input('status');
+        $coupon = $request->input('coupon');
+        $shopName = $request->input('shop');
+
+        if (isset($shopName) and (isset($status))) {
+
+            $shops = Shop::all();
+
+            $products = Product::select('products.*','shops.name')
+                ->leftJoin('shops', 'shop.name', '=', $shopName)
+
+                ->where('products.status', $status)
+                ->get();
+
+
+            return response()->json(['dsadsa']);
+        }
+
+        if ($coupon and (isset($status))) {
+
+            // $products = Product::select('products.*', 'coupons.numerate')
+            //     ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+
+            //     ->where('products.status', $status)
+            //     ->get();
+
+            // return response()->json($products);
+        }
+
+
+        // $products = Product::where('status', $status)->get();
+
+        if (!empty($products)) {
+
+            return response()->json(["success" => true, $products]);
+        } else {
+            return response()->json(["success" => false, "message" => "Product not found"]);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */

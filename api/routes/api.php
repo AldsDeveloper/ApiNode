@@ -18,14 +18,18 @@ use App\Http\Controllers\AccessTokenController;
 |
 */
 
+
+// For Personal access token For Nodejs
+Route::post('/generate/token', [ App\Http\Controllers\AccessTokenController::class , 'generate']);
+Route::post('/access/token', [ App\Http\Controllers\AccessTokenController::class , 'accessToken']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
 
-// For Personal access token
-Route::post('/generate/token', [ App\Http\Controllers\AccessTokenController::class , 'generate']);
-Route::post('/access/token', [ App\Http\Controllers\AccessTokenController::class , 'accessToken']);
+// For Product
+Route::post('fetch/product/active', [ App\Http\Controllers\ProductController::class , 'productPerShop']);
 
 
 // For Companies
