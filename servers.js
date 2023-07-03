@@ -13,7 +13,13 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 // ตั้งค่าเซสชัน
-app.use( session({ secret: 'frankent', resave: false, saveUninitialized: true,}));
+app.use(
+  session({
+    secret: 'frankent',
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -240,7 +246,7 @@ app.post('/upload/profile',authenticateToken,upload.single('image'),(req, res) =
 );
 
 app.post('/logout',authenticateToken,  (req, res) => {
-  // ทำลาย Session สำหรับการล็อกอิน userId
+  // Destroy the userId stored in the session
   req.session.destroy((error) => {
     if (error) {
       console.error('Error destroying session:', error);

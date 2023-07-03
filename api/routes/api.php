@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
+// For Personal access token
 Route::post('/generate/token', [ App\Http\Controllers\AccessTokenController::class , 'generate']);
 Route::post('/access/token', [ App\Http\Controllers\AccessTokenController::class , 'accessToken']);
 
