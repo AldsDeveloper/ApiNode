@@ -2,65 +2,80 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shop;
+use App\Models\Coupons;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCouponsRequest;
 use App\Http\Requests\UpdateCouponsRequest;
-use App\Models\Coupons;
 
 class CouponsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function fetch()
     {
-        //
+        $coupons = Coupons::all();
+
+        return response()->json(["success" => true, $coupons]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
-    }
+        // return response()->json($request);
+        // exit;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCouponsRequest $request)
-    {
-        //
-    }
+        $coupon = new Coupons();
+        $coupon->numerate = $request->input('numerate');
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Coupons $coupons)
-    {
-        //
+        if ($coupon->save()) {
+            return response()->json(['success' => true, 'message' => 'Coupon created successfully']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Failed to create coupon']);
+        }
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Coupons $coupons)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCouponsRequest $request, Coupons $coupons)
+    public function update(Request $request)
     {
-        //
+        $couponId = $request->input('id');
+
+        $coupon = Coupons::find($couponId);
+
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Coupon not found'], 404);
+        }
+        $coupon->numerate = $request->input('numerate');
+
+        $coupon->save();
+
+        if ($coupon->save()) {
+            return response()->json(['success' => true, 'message' => 'Coupon updated successfully']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Failed to update coupon']);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Coupons $coupons)
+    public function destroy(Request $request)
     {
-        //
+        $couponId = $request->input('id');
+        $coupon = Coupons::find($couponId);
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Coupon not found'], 404);
+        }
+
+        if ($coupon->delete()) {
+            return response()->json(['success' => true, 'message' => 'Coupon deleted successfully']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Failed to delete coupon']);
+        }
     }
 }
