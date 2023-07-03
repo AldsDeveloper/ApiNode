@@ -47,6 +47,13 @@ Route::post('create/coupon', [ App\Http\Controllers\CouponsController::class , '
 Route::post('update/coupon', [ App\Http\Controllers\CouponsController::class , 'update']);
 Route::post('destroy/coupon', [ App\Http\Controllers\CouponsController::class , 'destroy']);
 
+// For Product
+Route::post('fetch/product', [ App\Http\Controllers\ProductController::class , 'fetch']);
+Route::post('create/product', [ App\Http\Controllers\ProductController::class , 'create']);
+Route::post('update/product', [ App\Http\Controllers\ProductController::class , 'update']);
+Route::post('destroy/product', [ App\Http\Controllers\ProductController::class , 'destroy']);
+
+
 // For Product Type
 Route::post('fetch/product/type', [ App\Http\Controllers\ProductTypeController::class , 'fetch']);
 Route::post('create/product/type', [ App\Http\Controllers\ProductTypeController::class , 'create']);
