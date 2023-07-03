@@ -48,7 +48,7 @@ class ProductTypeController extends Controller
         if (!$type) {
             return response()->json(['success' => false, 'message' => 'Product type not found'], 404);
         }
-        
+
         $type->name = $request->input('name');
 
         $type->save();
@@ -65,16 +65,16 @@ class ProductTypeController extends Controller
      */
     public function destroy(Request $request)
     {
-        $shopId = $request->input('id');
-        $shop = ProductType::find($shopId);
-        if (!$shop) {
-            return response()->json(['success' => false, 'message' => 'Shop not found'], 404);
+        $typeId = $request->input('id');
+        $type = ProductType::find($typeId);
+        if (!$type) {
+            return response()->json(['success' => false, 'message' => 'Product Type not found'], 404);
         }
 
-        if ($shop->delete()) {
-            return response()->json(['success' => true, 'message' => 'Shop deleted successfully']);
+        if ($type->delete()) {
+            return response()->json(['success' => true, 'message' => 'Product Type deleted successfully']);
         } else {
-            return response()->json(['success' => false, 'message' => 'Failed to delete shop']);
+            return response()->json(['success' => false, 'message' => 'Failed to delete product Type']);
         }
     }
 }
