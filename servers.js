@@ -50,7 +50,7 @@ const authenticateToken = (req, res, next) => {
 
   // เชื่อมต่อกับ Laravel API เพื่อตรวจสอบและรับรองตัวตนผู้ใช้
   axios
-    .post('http://localhost:8080/api/access/token', null, {
+    .post('http://localhost:8000/api/access/token', null, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -79,35 +79,6 @@ const authenticateToken = (req, res, next) => {
 app.post('/access/token', authenticateToken, (req, res) => {
   res.json({ success: true, message: 'Access token is valid' });
 });
-
-// เส้นทาง API สำหรับสร้างและรับรองตัวตนผู้ใช้จาก Access Token
-// app.post('/generate/token', (req, res) => {
-//   // เชื่อมต่อกับ Laravel API เพื่อตรวจสอบและรับรองตัวตนผู้ใช้
-//   axios
-//     .post('http://localhost:8080/api/generate/token', {
-
-//     })
-
-//     .then((response) => {
-//       const { success, message } = response.data;
-//       if (success) {
-//         return res
-//           .status(401)
-//           .json({ success: true, token: data.token });
-//       } else {
-//         return res
-//           .status(401)
-//           .json({ success: false, message: 'Invalid access token' });
-//       }
-//     })
-//     .catch((error) => {
-//       console.error('Error verifying access token:', error);
-//       return res
-//         .status(500)
-//         .json({ success: false, message: 'Token internal error' });
-//     });
-
-// });
 
 // เส้นทาง API สำหรับการสมัครสมาชิก
 
