@@ -12,7 +12,6 @@ const session = require('express-session');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-
 // เปิดใช้งาน middleware สำหรับ parse รูปแบบ JSON และ URL-encoded
 app.use(bodyParser.json());
 app.use(express.json());
@@ -43,7 +42,6 @@ app.use(
 //     })
 // );
 
-
 const connection = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
@@ -53,8 +51,10 @@ const connection = mysql.createConnection({
 
 // Middleware สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
 const authenticateToken = (req, res, next) => {
-  const authorizationHeader = req.headers['authorization'];
-  const accessToken = authorizationHeader && authorizationHeader.split(' ')[1];
+  const accessToken = req.session.remember_token;
+
+  // const authorizationHeader = req.session.remember_token;
+  // const accessToken = authorizationHeader && authorizationHeader.split(' ')[1];
 
   if (!accessToken) {
     return res
