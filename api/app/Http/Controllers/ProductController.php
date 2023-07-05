@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\Shop;
+use App\Models\Coupons;
 use App\Models\Product;
 use App\Models\ProductType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Models\Coupons;
-use App\Models\Shop;
 
 class ProductController extends Controller
 {
@@ -89,17 +91,27 @@ class ProductController extends Controller
             }
         }
 
-        $products = Product::all();
+
+        //Show all option // dont required params
+        $products = DB::table('products')
+            ->join('shops', 'products.shop_id', '=', 'shops.id')
+            ->join('product_types', 'products.product_type', '=', 'product_types.id')
+            ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+            ->select('products.*', 'shops.name as shop_name', 'product_types.name as product_type_name', 'coupons.numerate')
+            ->where('products.status', 'active')
+            ->get();
 
         $products->transform(function ($product) {
-            $product->due_date = $product->due_date->format('d/m/Y');
+            $product->price_with_coupon = $product->price - ($product->price * $product->numerate / 100);
+            $product->price = floatval($product->price);
+            $product->due_date = Carbon::parse($product->due_date)->format('d/m/Y');
             return $product;
         });
 
         if (!$products->isEmpty()) {
-            return response()->json(["success" => true, "tile" => "Format Date() and Time ()" , "data" => $products]);
+            return response()->json(["success" => true, "data" => $products]);
         } else {
-            return response()->json(["success" => false, "message" => "Products not found"]);
+            return response()->json(["success" => false, "message" => "No active products found"]);
         }
     }
 
