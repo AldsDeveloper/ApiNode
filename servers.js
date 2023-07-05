@@ -12,6 +12,14 @@ const session = require('express-session');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
+
+// เปิดใช้งาน middleware สำหรับ parse รูปแบบ JSON และ URL-encoded
+app.use(bodyParser.json());
+app.use(express.json());
+app.use(upload.array());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // ตั้งค่าเซสชัน
 app.use(
   session({
@@ -21,8 +29,20 @@ app.use(
   })
 );
 
-app.use(bodyParser.json());
-app.use(express.json());
+// // for parsing application/json
+// app.use(
+//     bodyParser.json({
+//         limit: "50mb",
+//     })
+// );
+// // for parsing application/xwww-form-urlencoded
+// app.use(
+//     bodyParser.urlencoded({
+//         limit: "50mb",
+//         extended: true,
+//     })
+// );
+
 
 const connection = mysql.createConnection({
   host: '127.0.0.1',
@@ -30,10 +50,6 @@ const connection = mysql.createConnection({
   password: 'frankent',
   database: 'interview',
 });
-
-// เปิดใช้งาน middleware สำหรับ parse รูปแบบ JSON และ URL-encoded
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
 const authenticateToken = (req, res, next) => {
@@ -75,16 +91,21 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// เส้นทาง API สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
-app.post('/access/token', authenticateToken, (req, res) => {
-  res.json({ success: true, message: 'Access token is valid' });
-});
+// // เส้นทาง API สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
+// app.post('/access/token', authenticateToken, (req, res) => {
+//   res.json({ success: true, message: 'Access token is valid' });
+// });
 
 // เส้นทาง API สำหรับการสมัครสมาชิก
 
-app.post('/register', authenticateToken, (req, res) => {
+app.post('/register', (req, res) => {
   const { email, password, name } = req.body;
   const saltRounds = 10;
+
+  console.log('name:' + name);
+  console.log('password:' + password);
+  // console.log('password:' + hashedPassword);
+  console.log('email:' + email);
 
   bcrypt.hash(password, saltRounds, (error, hashedPassword) => {
     if (error) {
@@ -108,13 +129,14 @@ app.post('/register', authenticateToken, (req, res) => {
           .json({ success: false, message: 'Registration failed' });
         return;
       }
+
       res.json({ success: true, message: 'Registration successful' });
     });
   });
 });
 
 // เส้นทาง API สำหรับการเข้าสู่ระบบ
-app.post('/login', authenticateToken,  (req, res) => {
+app.post('/login', (req, res) => {
   // ตรวจสอบข้อมูลล็อกอิน
   const { email, password } = req.body;
 
@@ -149,20 +171,64 @@ app.post('/login', authenticateToken,  (req, res) => {
         return;
       }
 
-      // บันทึก userId ในเซสชัน
-      req.session.userId = user.id;
+      axios
+        .post('http://localhost:8000/api/generate/token', {
+          email: email,
+          password: password,
+        })
+        .then((response) => {
+          const { success, token } = response.data;
 
-      res.json({
-        success: true,
-        message: 'Login successful',
-        user,
-      });
+          if (success) {
+            // บันทึก userId ในเซสชัน
+            req.session.userId = user.id;
+            req.session.remember_token = token;
+
+            const updateQuery =
+              'UPDATE users SET remember_token = ? WHERE id = ?';
+            connection.query(
+              updateQuery,
+              [token, user.id],
+              (updateError, updateResult) => {
+                if (updateError) {
+                  console.error('Error updating remember_token:', updateError);
+                  res.status(500).json({
+                    success: false,
+                    message: 'Failed to update remember_token',
+                  });
+                  return;
+                }
+                res.json({
+                  success: true,
+                  message: 'Login successful',
+                  token: token,
+                  user,
+                });
+              }
+            );
+          } else {
+            return res.status(401).json({
+              success: false,
+              message: "Haven't generated API access token",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error('Error verifying access token:', error);
+          return res
+            .status(500)
+            .json({ success: false, message: 'Token internal error' });
+        });
     });
   });
 });
 
 // เส้นทาง API สำหรับอัปโหลดรูปภาพโปรไฟล์
-app.post('/upload/profile',authenticateToken,upload.single('image'),(req, res) => {
+app.post(
+  '/upload/profile',
+  authenticateToken,
+  upload.single('image'),
+  (req, res) => {
     if (!req.file) {
       res.status(400).json({ success: false, message: 'No file uploaded' });
       return;
@@ -206,7 +272,6 @@ app.post('/upload/profile',authenticateToken,upload.single('image'),(req, res) =
           });
           return;
         }
-
         res.json({
           success: true,
           message: 'Profile image uploaded successfully',
@@ -216,7 +281,7 @@ app.post('/upload/profile',authenticateToken,upload.single('image'),(req, res) =
   }
 );
 
-app.post('/logout',authenticateToken,  (req, res) => {
+app.post('/logout', authenticateToken, (req, res) => {
   // Destroy the userId stored in the session
   req.session.destroy((error) => {
     if (error) {

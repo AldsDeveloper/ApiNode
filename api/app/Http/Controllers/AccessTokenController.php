@@ -13,7 +13,8 @@ class AccessTokenController extends Controller
 {
     public function generate(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $payload = $request->json()->all();
+        $credentials = ['email' => $payload['email'] , 'password' => $payload['password']];
 
         if (Auth::attempt($credentials)) {
 
@@ -25,7 +26,7 @@ class AccessTokenController extends Controller
             return response()->json(['success' => true, 'token' => $token['token']], 200);
         }
 
-        return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        return response()->json(['success' => false, 'error' => 'Generate token is fials'], 401);
     }
 
 
