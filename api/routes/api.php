@@ -28,6 +28,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
+
+// Calculate Proposal
+Route::post('proposal/calculate', [ App\Http\Controllers\ProductController::class , 'calculateProposal']);
+
+
 // For Product
 Route::post('fetch/product/option', [ App\Http\Controllers\ProductController::class , 'productPerShop']);
 Route::post('update/product/all', [ App\Http\Controllers\ProductController::class , 'updateAll']);

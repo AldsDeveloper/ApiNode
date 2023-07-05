@@ -16,6 +16,39 @@ use App\Http\Requests\UpdateProductRequest;
 class ProductController extends Controller
 {
 
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function calculateProposal(Request $request)
+    {
+        $totalPrice = $request->input('price');
+        $discount = $request->input('discount');
+
+        if (isset($totalPrice) and (isset($discount))) {
+            $subtotal = $totalPrice - $discount;
+            $tax = $subtotal * 0.07;
+            $total = $subtotal + $tax;
+
+            $response = [
+                'ราคา' => $totalPrice,
+                'ส่วนลด' => $discount,
+                'ราคาหลังส่วนลด' => $subtotal,
+                'ภาษี' => "7%",
+                'ภาษีมูลค่าเพิ่มรวมยอด' => $tax,
+                'ราคารวมสุทธิ' => $total
+            ];
+
+            return response()->json(["success" => true, "ผลการคำนวนใยเสนอราคา" => $response]);
+        }
+        return response()->json(["success" => false,  "ผลลัพธ์" => "กรุณาระบุขอมูลให้ครบถ้วน"]);
+    }
+
+
+
+
+
+
+
     public function productPerShop(Request $request)
     {
         $status = $request->input('status');
