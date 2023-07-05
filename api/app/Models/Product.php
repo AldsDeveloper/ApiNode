@@ -21,6 +21,8 @@ class Product extends Model
         'status',
         'price',
         'coupon',
+        'due_date',
+        'due_time',
 
     ];
 }

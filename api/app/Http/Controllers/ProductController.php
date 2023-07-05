@@ -14,46 +14,116 @@ use App\Models\Shop;
 class ProductController extends Controller
 {
 
-    function productPerShop(Request $request)
+    public function productPerShop(Request $request)
     {
-
         $status = $request->input('status');
         $coupon = $request->input('coupon');
-        $shopName = $request->input('shop');
+        $shopName = $request->input('shop_name');
 
-        if (isset($shopName) and (isset($status))) {
-
-            $shops = Shop::all();
-
-            $products = Product::select('products.*','shops.name')
-                ->leftJoin('shops', 'shop.name', '=', $shopName)
-
-                ->where('products.status', $status)
+        // Paramiters is required : shop name , status
+        if ((isset($shopName) && $status === 'active') and (!isset($coupon))) {
+            $products = Product::select('products.*', 'shops.name as shop_name')
+                ->leftJoin('shops', 'products.shop_id', '=', 'shops.id')
+                ->where('products.status', 'active')
+                ->where('shops.name', $shopName)
                 ->get();
 
-
-            return response()->json(['dsadsa']);
+            if (!$products->isEmpty()) {
+                return response()->json(["success" => true, "data" => $products]);
+            } else {
+                return response()->json(["success" => false, "message" => "Products not found for the given shop and status"]);
+            }
         }
 
-        if ($coupon and (isset($status))) {
+        // Paramiters is required : coupon = true , status
+        if (($coupon && $status === 'active') and (!isset($shopName))) {
+            $products = Product::select('products.*', 'coupons.numerate')
+                ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+                ->get();
 
-            // $products = Product::select('products.*', 'coupons.numerate')
-            //     ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+            if (!$products->isEmpty()) {
+                $products->each(function ($product) {
+                    if ($product->coupon) {
+                        $product->price_with_discount = $product->price - ($product->price * $product->numerate / 100);
+                    }
+                });
 
-            //     ->where('products.status', $status)
-            //     ->get();
-
-            // return response()->json($products);
+                return response()->json(["success" => true, "data" => $products]);
+            } else {
+                return response()->json(["success" => false, "message" => "Products not found"]);
+            }
         }
 
 
-        // $products = Product::where('status', $status)->get();
+        // Paramiters is required : shop name , coupon = true , status
+        if (($coupon && $status === 'active') && (isset($shopName))) {
 
-        if (!empty($products)) {
+            if ($coupon && $status && isset($shopName)) {
+                if ($status === 'active') {
+                    $productsQuery = Product::select('products.*', 'coupons.numerate', 'shops.name as shop_name')
+                        ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+                        ->leftJoin('shops', 'products.shop_id', '=', 'shops.id')
+                        ->where('products.status', 'active')
+                        ->where('shops.name', $shopName);
+                } else {
+                    $productsQuery = Product::select('products.*', 'coupons.numerate', 'shops.name as shop_name')
+                        ->leftJoin('coupons', 'products.coupon', '=', 'coupons.id')
+                        ->leftJoin('shops', 'products.shop_id', '=', 'shops.id')
+                        ->where('products.status', $status)
+                        ->where('shops.name', $shopName);
+                }
 
-            return response()->json(["success" => true, $products]);
+                $products = $productsQuery->get();
+
+                if (!$products->isEmpty()) {
+                    $products->each(function ($product) {
+                        if ($product->coupon) {
+                            $product->price_with_discount = $product->price - ($product->price * $product->numerate / 100);
+                        }
+                    });
+
+                    return response()->json(["success" => true, "data" => $products]);
+                } else {
+                    return response()->json(["success" => false, "message" => "Products not found for the given coupon, status, and shop"]);
+                }
+            }
+        }
+
+        $products = Product::all();
+
+        $products->transform(function ($product) {
+            $product->due_date = $product->due_date->format('d/m/Y');
+            return $product;
+        });
+
+        if (!$products->isEmpty()) {
+            return response()->json(["success" => true, "tile" => "Format Date() and Time ()" , "data" => $products]);
         } else {
-            return response()->json(["success" => false, "message" => "Product not found"]);
+            return response()->json(["success" => false, "message" => "Products not found"]);
+        }
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function updateStatusAll(Request $request)
+    {
+        $shopName = $request->input('shop_name');
+        $status = $request->input('status');
+
+        $shop = Shop::where('name', $shopName)->first();
+
+        if ($shop) {
+            $products = Product::where('shop_id', $shop->id)->update(['status' => $status]);
+
+            if ($products) {
+                return response()->json(['success' => true, 'message' => 'Product status updated successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Failed to update product status']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Shop not found']);
         }
     }
 
@@ -77,11 +147,14 @@ class ProductController extends Controller
 
         $product = new Product();
         $product->name = $request->input('name');
-        $product->product_type = $request->input('product_type');
+        $product->product_type = $request->input('type');
         $product->price = $request->input('price');
         $product->coupon = $request->input('coupon');
         $product->status = $request->input('status');
         $product->shop_id = $request->input('shop_id');
+        $product->due_date = date('Y-m-d');
+        $product->due_time = date('H:i:s');
+
 
         if ($product->save()) {
             return response()->json(['success' => true, 'message' => 'Product created successfully']);
@@ -103,11 +176,13 @@ class ProductController extends Controller
         }
 
         $product->name = $request->input('name');
-        $product->product_type = $request->input('product_type');
+        $product->product_type = $request->input('type');
         $product->price = $request->input('price');
         $product->coupon = $request->input('coupon');
         $product->status = $request->input('status');
         $product->shop_id = $request->input('shop_id');
+        $product->due_date = date('Y-m-d');
+        $product->due_time = date('H:i:s');
 
         if ($product->save()) {
             return response()->json(['success' => true, 'message' => 'Product updated successfully']);
@@ -115,6 +190,10 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Failed to update product']);
         }
     }
+
+
+
+
 
     /**
      * Remove the specified resource from storage.

@@ -29,7 +29,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 // For Product
-Route::post('fetch/product/active', [ App\Http\Controllers\ProductController::class , 'productPerShop']);
+Route::post('fetch/product/option', [ App\Http\Controllers\ProductController::class , 'productPerShop']);
+Route::post('update/product/all', [ App\Http\Controllers\ProductController::class , 'updateAll']);
+
+
+// For Product
+Route::post('fetch/product', [ App\Http\Controllers\ProductController::class , 'fetch']);
+Route::post('create/product', [ App\Http\Controllers\ProductController::class , 'create']);
+Route::post('update/product', [ App\Http\Controllers\ProductController::class , 'update']);
+Route::post('destroy/product', [ App\Http\Controllers\ProductController::class , 'destroy']);
 
 
 // For Companies
@@ -51,11 +59,7 @@ Route::post('create/coupon', [ App\Http\Controllers\CouponsController::class , '
 Route::post('update/coupon', [ App\Http\Controllers\CouponsController::class , 'update']);
 Route::post('destroy/coupon', [ App\Http\Controllers\CouponsController::class , 'destroy']);
 
-// For Product
-Route::post('fetch/product', [ App\Http\Controllers\ProductController::class , 'fetch']);
-Route::post('create/product', [ App\Http\Controllers\ProductController::class , 'create']);
-Route::post('update/product', [ App\Http\Controllers\ProductController::class , 'update']);
-Route::post('destroy/product', [ App\Http\Controllers\ProductController::class , 'destroy']);
+
 
 
 // For Product Type
