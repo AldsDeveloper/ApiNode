@@ -24,9 +24,13 @@ const connection = mysql.createConnection({host: '127.0.0.1',user: 'root',passwo
 
 // Middleware สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
 const authenticateToken = (req, res, next) => {
+
+  // ดึง Token ที่เก็บไว้ใน Session มาตรวจสอบ
   const accessToken = req.session.remember_token;
 
-  // const authorizationHeader = req.session.remember_token;
+
+  //  ดึงค่า Token ที่อยู่ใน Bareer Token ของ Postman มาตรวจสอบ
+  // const authorizationHeader = req.headers['authorization'];
   // const accessToken = authorizationHeader && authorizationHeader.split(' ')[1];
 
   if (!accessToken) {
