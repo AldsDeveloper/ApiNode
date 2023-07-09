@@ -44,11 +44,6 @@ class ProductController extends Controller
     }
 
 
-
-
-
-
-
     public function productPerShop(Request $request)
     {
         $status = $request->input('status');

@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-
 const bodyParser = require('body-parser');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -226,7 +225,7 @@ app.post('/login', (req, res) => {
 // เส้นทาง API สำหรับอัปโหลดรูปภาพโปรไฟล์
 app.post(
   '/upload/profile',
-  authenticateToken,
+  
   upload.single('image'),
   (req, res) => {
     if (!req.file) {
