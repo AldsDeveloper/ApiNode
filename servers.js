@@ -12,41 +12,15 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 // เปิดใช้งาน middleware สำหรับ parse รูปแบบ JSON และ URL-encoded
-app.use(bodyParser.json());
 app.use(express.json());
-app.use(upload.array());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: "50mb", }));
+app.use(bodyParser.urlencoded({ limit: "50mb",extended: true, }));
 
 // ตั้งค่าเซสชัน
-app.use(
-  session({
-    secret: 'frankent',
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+app.use(session({secret: 'frankent',resave: false,saveUninitialized: true,}));
 
-// // for parsing application/json
-// app.use(
-//     bodyParser.json({
-//         limit: "50mb",
-//     })
-// );
-// // for parsing application/xwww-form-urlencoded
-// app.use(
-//     bodyParser.urlencoded({
-//         limit: "50mb",
-//         extended: true,
-//     })
-// );
 
-const connection = mysql.createConnection({
-  host: '127.0.0.1',
-  user: 'root',
-  password: 'frankent',
-  database: 'interview',
-});
+const connection = mysql.createConnection({host: '127.0.0.1',user: 'root',password: 'frankent',database: 'interview',});
 
 // Middleware สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
 const authenticateToken = (req, res, next) => {
@@ -90,13 +64,69 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// // เส้นทาง API สำหรับตรวจสอบและรับรองตัวตนผู้ใช้จาก Access Token
-// app.post('/access/token', authenticateToken, (req, res) => {
-//   res.json({ success: true, message: 'Access token is valid' });
-// });
+
+// เส้นทาง API สำหรับอัปโหลดรูปภาพโปรไฟล์
+app.post(
+  '/upload/profile',
+  
+  upload.single('profile'),
+  (req, res) => {
+    if (!req.file) {
+      res.status(400).json({ success: false, message: 'No file uploaded' });
+      return;
+    }
+
+    if (!req.session.userId) {
+      res.status(401).json({ success: false, message: 'User not logged in' });
+      return;
+    }
+
+    // รับค่า ID ผู้ใช้จากผู้ใช้ที่เข้าสู่ระบบ Session userId
+    const userId = req.session.userId;
+
+    // เก็บไฟล์ที่อัปโหลด
+    const imagePath = req.file.path;
+
+    // รับชื่อไฟล์จาก originalname
+    const originalFilename = req.file.originalname;
+
+    // สร้างชื่อไฟล์ใหม่ด้วย UUID
+    const newFilename = `${uuidv4()}.${originalFilename.split('.').pop()}`;
+
+    // อัปเดตชื่อไฟล์ใหม่ในฐานข้อมูล
+    const query = 'UPDATE users SET profile = ? WHERE id = ?';
+    connection.query(query, [newFilename, userId], (error, result) => {
+      if (error) {
+        console.error('Error updating profile image:', error);
+        res
+          .status(500)
+          .json({ success: false, message: 'Failed to upload profile image' });
+        return;
+      }
+
+      // เปลี่ยนชื่อไฟล์ในโฟลเดอร์อัปโหลด
+      fs.rename(imagePath, `public/uploads/${newFilename}`, (error) => {
+        if (error) {
+          console.error('Error renaming file:', error);
+          res.status(500).json({
+            success: false,
+            message: 'Failed to upload profile image',
+          });
+          return;
+        }
+        res.json({
+          success: true,
+          message: 'Profile image uploaded successfully',
+        });
+      });
+    });
+  }
+);
+
+// สำหรับการรับค่า Array form-data POST 
+app.use(upload.array());
 
 // เส้นทาง API สำหรับการสมัครสมาชิก
-
 app.post('/register', (req, res) => {
   const { email, password, name } = req.body;
   const saltRounds = 10;
@@ -221,64 +251,6 @@ app.post('/login', (req, res) => {
     });
   });
 });
-
-// เส้นทาง API สำหรับอัปโหลดรูปภาพโปรไฟล์
-app.post(
-  '/upload/profile',
-  
-  upload.single('image'),
-  (req, res) => {
-    if (!req.file) {
-      res.status(400).json({ success: false, message: 'No file uploaded' });
-      return;
-    }
-
-    if (!req.session.userId) {
-      res.status(401).json({ success: false, message: 'User not logged in' });
-      return;
-    }
-
-    // รับค่า ID ผู้ใช้จากผู้ใช้ที่เข้าสู่ระบบ Session userId
-    const userId = req.session.userId;
-
-    // เก็บไฟล์ที่อัปโหลด
-    const imagePath = req.file.path;
-
-    // รับชื่อไฟล์จาก originalname
-    const originalFilename = req.file.originalname;
-
-    // สร้างชื่อไฟล์ใหม่ด้วย UUID
-    const newFilename = `${uuidv4()}.${originalFilename.split('.').pop()}`;
-
-    // อัปเดตชื่อไฟล์ใหม่ในฐานข้อมูล
-    const query = 'UPDATE users SET profile = ? WHERE id = ?';
-    connection.query(query, [newFilename, userId], (error, result) => {
-      if (error) {
-        console.error('Error updating profile image:', error);
-        res
-          .status(500)
-          .json({ success: false, message: 'Failed to upload profile image' });
-        return;
-      }
-
-      // เปลี่ยนชื่อไฟล์ในโฟลเดอร์อัปโหลด
-      fs.rename(imagePath, `public/uploads/${newFilename}`, (error) => {
-        if (error) {
-          console.error('Error renaming file:', error);
-          res.status(500).json({
-            success: false,
-            message: 'Failed to upload profile image',
-          });
-          return;
-        }
-        res.json({
-          success: true,
-          message: 'Profile image uploaded successfully',
-        });
-      });
-    });
-  }
-);
 
 app.post('/logout', authenticateToken, (req, res) => {
   // Destroy the userId stored in the session
