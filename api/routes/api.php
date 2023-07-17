@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('proposal/calculate', [ App\Http\Controllers\ProductController::class , 'calculateProposal']);
 
 
-// For Product
+// For Product Option
 Route::post('fetch/product/option', [ App\Http\Controllers\ProductController::class , 'productPerShop']);
 Route::post('update/product/all', [ App\Http\Controllers\ProductController::class , 'updateAll']);
 
