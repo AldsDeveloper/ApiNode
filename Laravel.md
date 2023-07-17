@@ -15,3 +15,5 @@
 - Method เป็น POST ทั้้งหมด
 - Api ทั้งหมดจะอยู่ใน  Api/routes/api.php ครับ 
 - ผมสร้าง Api เป็น Crud สามารถ Create Delete Update Read ได้ทุกอย่างครับและอยู่ในบททดสอบทุกข้อครับ
+
+- และมี API ที่เป็น Option ที่สามารถ Fetch ข้อมูล ได้หลายแบบเกี่ยวกับ Product ซึ่งอยู่ในเส้น fetch/product/option ครับ 
